@@ -117,7 +117,7 @@ export function canAccessPage(page: string, user: any = null, teachers: Teacher[
   const STAFF_ROLE_PAGE_ACCESS: Record<string, string[]> = {
     lesson_plan: ['lesson-plans'],
     accountant: ['classes', 'staff', 'lesson-plans', 'costs'], // Accountant can access classes and staff lists
-    cskh_sale: ['staff-cskh-detail'],
+    cskh_sale: ['staff-cskh-detail', 'student-detail', 'class-detail'],
     communication: [],
     teacher: [],
   };

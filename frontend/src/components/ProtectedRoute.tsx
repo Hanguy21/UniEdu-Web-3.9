@@ -104,47 +104,55 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Check if teacher is assigned to this class
   if (isClassDetailPage && user?.role === 'teacher' && classData && !isLoadingClass) {
-    const teacherId = user.linkId;
-    // Normalize classTeacherIds - handle both array and single value
-    let classTeacherIds: string[] = [];
-    if (Array.isArray(classData.teacherIds)) {
-      classTeacherIds = classData.teacherIds.filter(Boolean);
-    } else if (classData.teacherId) {
-      classTeacherIds = [classData.teacherId];
-    } else if (classData.teacher_ids && Array.isArray(classData.teacher_ids)) {
-      classTeacherIds = classData.teacher_ids.filter(Boolean);
-    }
+    // CSKH staff can access any class detail page (they need it to view student class info)
+    const staffRecord = teachers.find((t: any) => t.id === user.linkId || (t as any).userId === user.id);
+    const staffRoles = staffRecord?.roles || [];
+    const isCskhStaff = Array.isArray(staffRoles) && staffRoles.includes('cskh_sale');
     
-    // Nếu không có linkId, thử tìm teacher record
-    let actualTeacherId = teacherId;
-    if (!actualTeacherId && !isLoadingTeachers && teachers.length > 0) {
-      let teacherRecord = null;
-      if (user.id) {
-        teacherRecord = teachers.find((t: any) => (t as any).userId === user.id);
+    if (!isCskhStaff) {
+      const teacherId = user.linkId;
+      // Normalize classTeacherIds - handle both array and single value
+      let classTeacherIds: string[] = [];
+      if (Array.isArray(classData.teacherIds)) {
+        classTeacherIds = classData.teacherIds.filter(Boolean);
+      } else if (classData.teacherId) {
+        classTeacherIds = [classData.teacherId];
+      } else if (classData.teacher_ids && Array.isArray(classData.teacher_ids)) {
+        classTeacherIds = classData.teacher_ids.filter(Boolean);
       }
-      if (!teacherRecord && user.email) {
-        teacherRecord = teachers.find((t) => 
-          (t.email || '').toLowerCase() === (user.email || '').toLowerCase()
-        );
+      
+      // Nếu không có linkId, thử tìm teacher record
+      let actualTeacherId = teacherId;
+      if (!actualTeacherId && !isLoadingTeachers && teachers.length > 0) {
+        let teacherRecord = null;
+        if (user.id) {
+          teacherRecord = teachers.find((t: any) => (t as any).userId === user.id);
+        }
+        if (!teacherRecord && user.email) {
+          teacherRecord = teachers.find((t) => 
+            (t.email || '').toLowerCase() === (user.email || '').toLowerCase()
+          );
+        }
+        if (teacherRecord) {
+          actualTeacherId = teacherRecord.id;
+        }
       }
-      if (teacherRecord) {
-        actualTeacherId = teacherRecord.id;
+      
+      // Chỉ redirect nếu:
+      // 1. Đã có actualTeacherId (đã tìm được teacher record)
+      // 2. VÀ teacher không được assign vào lớp này
+      // 3. VÀ đã load xong teachers data (không còn đang loading)
+      // 4. VÀ class có ít nhất 1 teacher được assign (để tránh block khi class chưa có teacher)
+      if (!isLoadingTeachers && actualTeacherId && classTeacherIds.length > 0 && !classTeacherIds.includes(actualTeacherId)) {
+        return <Navigate to="/home" replace />;
       }
-    }
-    
-    // Chỉ redirect nếu:
-    // 1. Đã có actualTeacherId (đã tìm được teacher record)
-    // 2. VÀ teacher không được assign vào lớp này
-    // 3. VÀ đã load xong teachers data (không còn đang loading)
-    // 4. VÀ class có ít nhất 1 teacher được assign (để tránh block khi class chưa có teacher)
-    if (!isLoadingTeachers && actualTeacherId && classTeacherIds.length > 0 && !classTeacherIds.includes(actualTeacherId)) {
-      return <Navigate to="/home" replace />;
     }
     
     // Nếu chưa có actualTeacherId và đã load xong teachers, cho phép truy cập
     // (có thể là admin hoặc có quyền khác, hoặc teacher record chưa được link)
     // Chỉ block nếu chắc chắn teacher không được assign
     // Nếu class không có teacher nào được assign, cho phép truy cập (có thể là class mới)
+    // CSKH staff luôn được phép truy cập class detail
   }
 
   // Wait for teachers data to load before checking access (only if needed)
