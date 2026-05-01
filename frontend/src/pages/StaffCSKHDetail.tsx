@@ -387,6 +387,123 @@ function StaffCSKHDetail() {
         </h1>
       </div>
 
+      {/* Statistics Summary Card */}
+      {!cskhLoading && cskhDetailData && studentStats.length > 0 && (
+        <div className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-4)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="3" y1="15" x2="21" y2="15" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <line x1="15" y1="3" x2="15" y2="21" />
+            </svg>
+            <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>
+              Thống kê - Tháng {selectedMonth}/{selectedYear}
+            </h3>
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: 'var(--spacing-3)',
+            }}
+          >
+            {/* Total Students */}
+            <div
+              style={{
+                padding: 'var(--spacing-4)',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.03) 100%)',
+                border: '1px solid rgba(59, 130, 246, 0.15)',
+                borderRadius: 'var(--radius-lg)',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--muted)', marginBottom: 'var(--spacing-1)', fontWeight: 500 }}>
+                Số học sinh
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>
+                {studentStats.length}
+              </div>
+            </div>
+
+            {/* Total Paid Amount */}
+            <div
+              style={{
+                padding: 'var(--spacing-4)',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.03) 100%)',
+                border: '1px solid rgba(59, 130, 246, 0.15)',
+                borderRadius: 'var(--radius-lg)',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--muted)', marginBottom: 'var(--spacing-1)', fontWeight: 500 }}>
+                Tổng đã đóng
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary)' }}>
+                {formatCurrencyVND(totals.totalPaidAll)}
+              </div>
+            </div>
+
+            {/* Total Profit */}
+            <div
+              style={{
+                padding: 'var(--spacing-4)',
+                background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0.03) 100%)',
+                border: '1px solid rgba(124, 58, 237, 0.15)',
+                borderRadius: 'var(--radius-lg)',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--muted)', marginBottom: 'var(--spacing-1)', fontWeight: 500 }}>
+                Tổng lợi nhuận
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#7C3AED' }}>
+                {formatCurrencyVND(totals.totalProfitAll)}
+              </div>
+            </div>
+
+            {/* Unpaid Profit */}
+            <div
+              style={{
+                padding: 'var(--spacing-4)',
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.15)',
+                borderRadius: 'var(--radius-lg)',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--muted)', marginBottom: 'var(--spacing-1)', fontWeight: 500 }}>
+                <span className="badge badge-danger" style={{ fontSize: 'var(--font-size-xs)', padding: '2px 6px', marginRight: '4px' }}>✗</span>
+                Chưa thanh toán
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#dc2626' }}>
+                {formatCurrencyVND(totals.totalUnpaidProfit)}
+              </div>
+            </div>
+
+            {/* Paid Profit */}
+            <div
+              style={{
+                padding: 'var(--spacing-4)',
+                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.03) 100%)',
+                border: '1px solid rgba(34, 197, 94, 0.15)',
+                borderRadius: 'var(--radius-lg)',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--muted)', marginBottom: 'var(--spacing-1)', fontWeight: 500 }}>
+                <span className="badge badge-success" style={{ fontSize: 'var(--font-size-xs)', padding: '2px 6px', marginRight: '4px' }}>✓</span>
+                Đã thanh toán
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#059669' }}>
+                {formatCurrencyVND(totals.totalPaidProfit)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Month Filter */}
       <div className="card" style={{ marginBottom: 'var(--spacing-4)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-2)' }}>
