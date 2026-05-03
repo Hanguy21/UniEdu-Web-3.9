@@ -6530,6 +6530,25 @@ function ExercisesTab({
                     </span>
                   </div>
                 )}
+                <div className="exercise-detail-row" style={{ gridColumn: '1 / -1' }}>
+                  <span className="exercise-detail-label">Người phụ trách</span>
+                  <span className="exercise-detail-value">
+                    {(() => {
+                      if (!selectedExerciseDetail.assistant_id) return <span style={{ color: 'var(--muted)' }}>-</span>;
+                      const staff = lessonPlanStaff.find((s: any) => s.id === selectedExerciseDetail.assistant_id);
+                      const name = staff ? (staff.fullName || staff.full_name || staff.name || staff.email || staff.id) : selectedExerciseDetail.assistant_id;
+                      return (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--primary)', flexShrink: 0 }}>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                          </svg>
+                          <span style={{ fontWeight: '500', color: 'var(--text)' }}>{name}</span>
+                        </span>
+                      );
+                    })()}
+                  </span>
+                </div>
               </div>
             </div>
 

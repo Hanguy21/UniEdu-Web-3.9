@@ -179,6 +179,19 @@ function ClassDetail() {
     setOptimisticOperations(new Map());
   }, [refetchClass, refetchStudents, refetchSessions, refetchClassDetailData]);
 
+  // Fetch all teachers for CSKH role checking (same pattern as ProtectedRoute/Layout)
+  // CHỈ fetch khi user là teacher để kiểm tra staff roles chính xác
+  const { data: allTeachersForRolesData } = useDataLoading(
+    () => fetchTeachers(),
+    [],
+    {
+      cacheKey: 'teachers-for-class-detail-roles',
+      staleTime: 5 * 60 * 1000,
+      enabled: currentUser?.role === 'teacher',
+    }
+  );
+  const allTeachersForRoles = Array.isArray(allTeachersForRolesData) ? allTeachersForRolesData : [];
+
   // Fetch all teachers only when needed (for EditTeacherModal) - lazy loading
   const [allTeachers, setAllTeachers] = useState<any[]>([]);
   const [isLoadingAllTeachers, setIsLoadingAllTeachers] = useState(false);
@@ -268,20 +281,24 @@ function ClassDetail() {
   // Permission checks - only allow actions if authenticated
   const isAdmin = isAuthenticated && hasRole('admin');
   const canEdit = isAuthenticated && isAdmin;
-  const canManage = isAuthenticated && (isAdmin || hasRole('accountant') || userHasStaffRole('cskh_sale', currentUser, classTeachers));
+  // CSKH role check: dùng allTeachersForRoles (tất cả nhân sự) thay vì classTeachers
+  // vì CSKH staff không phải là gia sư của lớp nên không nằm trong classTeachers
+  const hasCskhPrivileges = isAuthenticated && userHasStaffRole('cskh_sale', currentUser, allTeachersForRoles.length > 0 ? allTeachersForRoles : classTeachers);
+  
+  const canManage = isAuthenticated && (isAdmin || hasRole('accountant') || hasCskhPrivileges);
   const canManageStudents = canManage;
   const canManageTeacherList = canManage;
   // Show financial details only if authenticated and admin
   const showClassFinancialDetails = isAuthenticated && isAdmin;
   
   // Payment status management permissions
-  const userStaffRoles = isAuthenticated ? getUserStaffRoles(currentUser, classTeachers) : [];
-  const hasCskhPrivileges = isAuthenticated && userHasStaffRole('cskh_sale', currentUser, classTeachers);
+  const userStaffRoles = isAuthenticated ? getUserStaffRoles(currentUser, allTeachersForRoles.length > 0 ? allTeachersForRoles : classTeachers) : [];
   const canManagePaymentStatus = isAuthenticated && (isAdmin || hasRole('accountant') || hasCskhPrivileges);
   
   // Session management permissions
   // Teacher role hoặc staff role 'teacher' đều có thể tạo/chỉnh sửa session
-  const isTutor = isAuthenticated && (currentUser?.role === 'teacher' || userHasStaffRole('teacher', currentUser, classTeachers));
+  // CSKH staff KHÔNG phải là gia sư (tutor) - loại trừ để không bị ẩn nút thống kê
+  const isTutor = isAuthenticated && !hasCskhPrivileges && (currentUser?.role === 'teacher' || userHasStaffRole('teacher', currentUser, classTeachers));
   const canShowDelete = canManage && !isTutor;
   const canSelectSessions = canManage || hasCskhPrivileges;
   const canBulkUpdateStatus = isAuthenticated && (isAdmin || hasRole('accountant') || hasCskhPrivileges);
